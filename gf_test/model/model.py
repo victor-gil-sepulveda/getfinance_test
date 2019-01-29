@@ -32,11 +32,11 @@ class MovementTypes:
     DEPOSIT = "DEPOSIT"
 
 
-class Transfer(Base):
+class AccountMovement(Base):
     """
     A transfer between bank accounts, holding some info and associated expenses
     """
-    TABLE = 'transfer'
+    TABLE = 'accountmovement'
     __tablename__ = TABLE
     id = Column(Integer, primary_key=True, autoincrement=True)
     sender_id = Column(Integer, ForeignKey(Account.TABLE+'.id'), nullable=True)
@@ -53,6 +53,8 @@ class TransferCost(Base):
     This stores the comission that each bank applies for a transfer
     to another bank. Lookup table.
     """
+    TABLE = 'transfercost'
+    __tablename__ = TABLE
     sender_bank_id = Column(Integer, ForeignKey(Bank.TABLE+'.id'), primary_key=True)
     receiver_bank_id = Column(Integer, ForeignKey(Bank.TABLE+'.id'), primary_key=True)
     cost = Column(Float, nullable=False)
