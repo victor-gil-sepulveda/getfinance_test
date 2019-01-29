@@ -22,6 +22,7 @@ class Account(Base):
     __tablename__ = TABLE
     id = Column(Integer, primary_key=True, autoincrement=True)
     bank = Column(Integer, ForeignKey(Bank.TABLE+'.id'))
+    customer_name = Column(String(32))
     amount = Column(Float, default=0.0)
 
 
@@ -46,19 +47,6 @@ class AccountMovement(Base):
     cost = Column(Float, default=0.0)
     created = Column(DateTime, default=datetime.datetime.utcnow)
     movement_type = Column(Enum(MovementTypes))
-
-    # @staticmethod
-    # def serialize(a_mov):
-    #     serialized_a_mov = {
-    #         "id": a_mov.id,
-    #         "src": a_mov.src_account_id,
-    #         "dst": a_mov.dst_account_id,
-    #         "amount": a_mov.amount,
-    #         "info": a_mov.info,
-    #         "cost": a_mov.cost,
-    #         "created": a_mov.created,
-    #         "movement_type": a_mov.movement_type
-    #     }
 
 
 class TransferCost(Base):
