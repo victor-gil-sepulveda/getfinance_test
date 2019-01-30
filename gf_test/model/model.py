@@ -26,6 +26,12 @@ class Account(Base):
     customer_name = Column(String(32))
     amount = Column(Float, default=0.0)
 
+    def serialize(self):
+        return {
+            "id": self.id,
+
+        }
+
 
 class MovementTypes(enum.Enum):
     TRANSFER = "TRANSFER"
@@ -47,21 +53,19 @@ class AccountMovement(Base):
     info = Column(String(250))
     cost = Column(Float, default=0.0)
     created = Column(DateTime, default=datetime.datetime.utcnow)
-    movement_type = Column(Enum(MovementTypes))
+    movement_type = Column(Enum(MovementTypes), nullable=True)
 
-
-    # Basically using this example: https://docs.sqlalchemy.org/en/latest/orm/mapped_sql_expr.html
-
+    # Basically I am using this example: https://docs.sqlalchemy.org/en/latest/orm/mapped_sql_expr.html
     @hybrid_property
     def movement_cost(self):
-        if self.firstname is not None:
-            return self.firstname + " " + self.lastname
+        if self.src_account != self.dst_account and self.src_account != None:
+            return 2.5
         else:
-            return self.lastname
+            return 0.0
 
     @movement_cost.expression
     def movement_cost(cls):
         return case([
-            (cls.src_account != cls.dst_account, 2.5),
+            (cls.src_account != cls.dst_account and cls.src_account != None, 2.5),
         ], else_=0.0)
 
