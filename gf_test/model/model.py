@@ -1,8 +1,9 @@
 import datetime
-from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, ForeignKey, Integer, String, Float, DateTime, Enum
 import enum
+from sqlalchemy.sql import case
+from sqlalchemy.ext.hybrid import hybrid_property
 
 Base = declarative_base()
 
@@ -49,17 +50,18 @@ class AccountMovement(Base):
     movement_type = Column(Enum(MovementTypes))
 
 
-class TransferCost(Base):
-    """
-    This stores the comission that each bank applies for a transfer
-    to another bank. Lookup table.
-    """
-    TABLE = 'transfercost'
-    __tablename__ = TABLE
-    sender_bank_id = Column(Integer, ForeignKey(Bank.TABLE+'.id'), primary_key=True)
-    receiver_bank_id = Column(Integer, ForeignKey(Bank.TABLE+'.id'), primary_key=True)
-    cost = Column(Float, nullable=False)
+    # Basically using this example: https://docs.sqlalchemy.org/en/latest/orm/mapped_sql_expr.html
 
-# engine = create_engine('sqlite:///getfinance_tech_test.db')
-#
-# Base.metadata.create_all(engine)
+    @hybrid_property
+    def movement_cost(self):
+        if self.firstname is not None:
+            return self.firstname + " " + self.lastname
+        else:
+            return self.lastname
+
+    @movement_cost.expression
+    def movement_cost(cls):
+        return case([
+            (cls.src_account != cls.dst_account, 2.5),
+        ], else_=0.0)
+
