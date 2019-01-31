@@ -42,23 +42,52 @@ class TestModel(unittest.TestCase):
         john_account = Account(bank=da_box_bank, customer_name="John")
         ralph_account = Account(bank=da_box_bank, customer_name="Ralph")
 
-        jim_to_bank_transfer = AccountMovement(dst_account=jim_account,
-                                               amount=50000, info="All my funds",
-                                               movement_type=MovementTypes.DEPOSIT)
-        jim_to_emma_transfer = AccountMovement(src_account=jim_account, dst_account=emma_account,
-                                               amount=20000, info="Now we are even",
-                                               movement_type=MovementTypes.TRANSFER)
-        emma_to_steve_transfer = AccountMovement(src_account=emma_account, dst_account=steve_account,
-                                                 amount=2500, info="Flat rent",
-                                                 movement_type=MovementTypes.TRANSFER)
-        emma_to_sara_transfer = AccountMovement(src_account=emma_account, dst_account=sara_account,
-                                                amount=3000, info="Birthday!!",
-                                                movement_type=MovementTypes.TRANSFER)
+        """
+        amount = Column(Float, nullable=False)
+        account_id = Column(Integer, ForeignKey(Account.TABLE+'.id'), nullable=False)
+        movement_type = Column(Enum(MovementTypes), nullable=False)
+        created = Column(DateTime, default=datetime.datetime.utcnow)
+        """
+
+        jim_to_bank_mov = AccountMovement(account=jim_account,
+                                          amount=50000,
+                                          movement_type=MovementTypes.DEPOSIT)
+
+        """
+        src_accmov = relationship("AccountMovement", foreign_keys=[src_accmov_id])
+        dst_accmov = relationship("AccountMovement", foreign_keys=[dst_accmov_id])
+        info = Column(String(250))
+        """
+
+        jim_to_emma_transfer = AccountMovement(src_accmov=AccountMovement(account=jim_account,
+                                                                          amount=-20000,
+                                                                          movement_type=MovementTypes.TRANSFER_SRC),
+                                               dst_accmov=AccountMovement(account=emma_account,
+                                                                          amount=20000,
+                                                                          movement_type=MovementTypes.TRANSFER_DST),
+                                               info="Now we are even")
+
+        emma_to_steve_transfer = AccountMovement(src_accmov=AccountMovement(account=emma_account,
+                                                                            amount=-2500,
+                                                                            movement_type=MovementTypes.TRANSFER_SRC),
+                                                 dst_accmov=AccountMovement(account=steve_account,
+                                                                            amount=2500,
+                                                                            movement_type=MovementTypes.TRANSFER_DST),
+                                                 info="Flat rent")
+
+        emma_to_sara_transfer = AccountMovement(src_accmov=AccountMovement(account=emma_account,
+                                                                           amount=-3000,
+                                                                           movement_type=MovementTypes.TRANSFER_SRC),
+                                                dst_accmov=AccountMovement(account=sara_account,
+                                                                           amount=3000,
+                                                                           movement_type=MovementTypes.TRANSFER_DST),
+                                                info="Birthday!!")
 
         session.add_all([
             pankia_bank, santonder_bank, da_box_bank,
             steve_account, jim_account, emma_account, sara_account, john_account, ralph_account,
-            jim_to_bank_transfer, jim_to_emma_transfer, emma_to_steve_transfer, emma_to_sara_transfer
+            jim_to_emma_transfer,
+            emma_to_steve_transfer, emma_to_sara_transfer
         ])
         session.commit()
 

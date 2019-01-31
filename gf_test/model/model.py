@@ -7,14 +7,13 @@ from sqlalchemy import Column, ForeignKey, Integer, String, Float, DateTime, Enu
 import enum
 
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql import case
-from sqlalchemy.ext.hybrid import hybrid_property
 
 Base = declarative_base()
 
 
 class MovementTypes(enum.Enum):
-    TRANSFER = "TRANSFER"
+    TRANSFER_SRC = "TRANSFER_SRC"
+    TRANSFER_DST = "TRANSFER_DST"
     BANK_EXPENSE = "BANK_EXPENSE"
     WITHDRAWAL = "WITHDRAWAL"
     DEPOSIT = "DEPOSIT"
@@ -43,32 +42,24 @@ class Account(Base):
 
 
 class AccountMovement(Base):
-    """
-    A transfer between bank accounts, holding some info and associated expenses
-    """
     TABLE = 'accountmovement'
     __tablename__ = TABLE
     id = Column(Integer, primary_key=True, autoincrement=True)
-    src_account_id = Column(Integer, ForeignKey(Account.TABLE+'.id'), nullable=True)
-    dst_account_id = Column(Integer, ForeignKey(Account.TABLE+'.id'), nullable=True)
     amount = Column(Float, nullable=False)
-    info = Column(String(250))
-    cost = Column(Float, default=0.0)
-    created = Column(DateTime, default=datetime.datetime.utcnow)
+    account_id = Column(Integer, ForeignKey(Account.TABLE+'.id'), nullable=False)
     movement_type = Column(Enum(MovementTypes), nullable=False)
-    src_account = relationship("Account", foreign_keys=[src_account_id])
-    dst_account = relationship("Account", foreign_keys=[dst_account_id])
+    created = Column(DateTime, default=datetime.datetime.utcnow)
 
-    # Basically I am using this example: https://docs.sqlalchemy.org/en/latest/orm/mapped_sql_expr.html
-    @hybrid_property
-    def movement_cost(self):
-        if self.src_account != self.dst_account and self.src_account != None:
-            return 2.5
-        else:
-            return 0.0
 
-    @movement_cost.expression
-    def movement_cost(cls):
-        return case([
-            (cls.src_account != cls.dst_account and cls.src_account != None, 2.5),
-        ], else_=0.0)
+class Transfer(Base):
+    """
+    A transfer between bank accounts, holding some info and associated expenses
+    """
+    TABLE = 'transfer'
+    __tablename__ = TABLE
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    src_accmov_id = Column(Integer, ForeignKey(AccountMovement.TABLE+'.id'), nullable=True)
+    dst_accmov_id = Column(Integer, ForeignKey(AccountMovement.TABLE+'.id'), nullable=True)
+    src_accmov = relationship("AccountMovement", foreign_keys=[src_accmov_id])
+    dst_accmov = relationship("AccountMovement", foreign_keys=[dst_accmov_id])
+    info = Column(String(250))
