@@ -37,10 +37,6 @@ class Account(Base):
     amount = Column(Float, default=0.0)
     bank = relationship("Bank", back_populates=__tablename__, uselist=False)
 
-    @staticmethod
-    def total(session):
-        pass
-
 
 class AccountMovement(Base):
     TABLE = 'accountmovement'

@@ -1,4 +1,4 @@
-from marshmallow_sqlalchemy import ModelSchema, ModelSchemaOpts
+from marshmallow_sqlalchemy import ModelSchema
 from marshmallow import fields
 from gf_test.model.model import Account, Bank, AccountMovement, Transfer
 

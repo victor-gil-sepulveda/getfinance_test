@@ -8,6 +8,7 @@ import datetime
 from sqlalchemy.engine import create_engine
 from sqlalchemy.orm.session import sessionmaker
 from gf_test.model.model import Base, Bank, Account, AccountMovement, MovementTypes, Transfer
+from gf_test.model.operation import Operation
 from gf_test.model.schemas import AccountSchema, AccountMovementSchema, TransferSchema, BankSchema
 import gf_test.model.test as test_module
 
@@ -26,14 +27,13 @@ class TestModel(unittest.TestCase):
         cls.data_folder = os.path.join(os.path.dirname(inspect.getfile(test_module)), "data")
 
     def setUp(self):
-        # setup db
+        # Populate the DB
         if os.path.exists(TestModel.TEST_DB):
             os.remove(TestModel.TEST_DB)
         engine = create_engine('sqlite:///'+TestModel.TEST_DB)
         Base.metadata.create_all(engine)
         Session = sessionmaker(bind=engine)
         session = Session()
-        # Populate the DB
 
         ## Banks
         pankia_bank = Bank(name="Pankia")
@@ -49,7 +49,6 @@ class TestModel(unittest.TestCase):
 
         john_account = Account(bank=da_box_bank, customer_name="John")
         ralph_account = Account(bank=da_box_bank, customer_name="Ralph")
-
 
         jim_to_bank_mov = AccountMovement(account=jim_account,
                                           amount=50000,
@@ -129,7 +128,19 @@ class TestModel(unittest.TestCase):
         expected = json.load(fp)
         self.assertItemsEqual(data, expected)
 
-    
+    def test_account_totals(self):
+        jim_id = self.session.query(Account.id).filter(Account.customer_name == 'Jim').first()[0]
+        self.assertEqual(Operation(self.session).account_totals(jim_id), 30000)
+
+        emma_id = self.session.query(Account.id).filter(Account.customer_name == 'Emma').first()[0]
+        self.assertEqual(Operation(self.session).account_totals(emma_id), 14500)
+
+    def test_account_list(self):
+        emma_id = self.session.query(Account.id).filter(Account.customer_name == 'Emma').first()[0]
+        movements = Operation(self.session).account_movements(emma_id)
+        fp = open(os.path.join(self.data_folder, "emma_movements.json"), "r")
+        expected = json.load(fp)
+        self.assertItemsEqual(movements, expected)
 
 if __name__ == '__main__':
     unittest.main()
