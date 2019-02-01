@@ -1,7 +1,4 @@
 import datetime
-import json
-
-from evdev._input import device_read_many
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, ForeignKey, Integer, String, Float, DateTime, Enum
 import enum
@@ -11,13 +8,13 @@ from sqlalchemy.orm import relationship
 Base = declarative_base()
 
 
-class MovementTypes(enum.Enum):
-    TRANSFER_SRC = "TRANSFER_SRC"
-    TRANSFER_DST = "TRANSFER_DST"
-    BANK_EXPENSE = "BANK_EXPENSE"
-    WITHDRAWAL = "WITHDRAWAL"
-    DEPOSIT = "DEPOSIT"
-    UNKNOWN = "UNKNOWN"
+class MovementTypes(enum.IntEnum):
+    UNKNOWN = -1
+    TRANSFER_SRC = 0
+    TRANSFER_DST = 1
+    BANK_EXPENSE = 2
+    WITHDRAWAL = 3
+    DEPOSIT = 4
 
 
 class Bank(Base):
@@ -40,6 +37,10 @@ class Account(Base):
     amount = Column(Float, default=0.0)
     bank = relationship("Bank", back_populates=__tablename__, uselist=False)
 
+    @staticmethod
+    def total(session):
+        pass
+
 
 class AccountMovement(Base):
     TABLE = 'accountmovement'
@@ -47,7 +48,8 @@ class AccountMovement(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     amount = Column(Float, nullable=False)
     account_id = Column(Integer, ForeignKey(Account.TABLE+'.id'), nullable=False)
-    movement_type = Column(Enum(MovementTypes), nullable=False)
+    account = relationship("Account", foreign_keys=[account_id])
+    movement_type = Column(Integer, nullable=False)
     created = Column(DateTime, default=datetime.datetime.utcnow)
 
 

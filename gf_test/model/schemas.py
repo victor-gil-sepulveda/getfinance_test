@@ -1,6 +1,6 @@
 from marshmallow_sqlalchemy import ModelSchema, ModelSchemaOpts
 from marshmallow import fields
-from gf_test.model.model import Account, Bank, AccountMovement
+from gf_test.model.model import Account, Bank, AccountMovement, Transfer
 
 
 class RecBankSchema(ModelSchema):
@@ -18,11 +18,18 @@ class RecAccountSchema(ModelSchema):
 
 
 class RecAccountMovementSchema(ModelSchema):
-    src_account = fields.Nested("AccountSchema", many=False)
-    dst_account = fields.Nested("AccountSchema", many=False)
+    account = fields.Nested("AccountSchema", many=False)
 
     class Meta:
         model = AccountMovement
+
+
+class RecTransferSchema(ModelSchema):
+    src_accmov = fields.Nested("AccountMovementSchema", many=False)
+    dst_accmov = fields.Nested("AccountSchema", many=False)
+
+    class Meta:
+        model = Transfer
 
 
 class BankSchema(ModelSchema):
@@ -41,3 +48,9 @@ class AccountMovementSchema(ModelSchema):
 
     class Meta:
         model = AccountMovement
+
+
+class TransferSchema(ModelSchema):
+
+    class Meta:
+        model = Transfer
