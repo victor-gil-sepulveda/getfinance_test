@@ -142,5 +142,8 @@ class TestModel(unittest.TestCase):
         expected = json.load(fp)
         self.assertItemsEqual(movements, expected)
 
+    def test_transfer_creation_from_local_bank(self):
+        Operation(self.session).do_transfer(1, 1, 4, 100, "lol")
+
 if __name__ == '__main__':
     unittest.main()
