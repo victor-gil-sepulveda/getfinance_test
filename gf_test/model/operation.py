@@ -55,29 +55,28 @@ class Operation:
             .filter(Account.id == dst_acc_id) \
             .first()[0]
 
-
-        src_movement = AccountMovement(account_id=src_acc_id,
-                                       amount=-amount,
-                                       movement_type=MovementTypes.TRANSFER_SRC)
-
-        dst_movement = AccountMovement(account_id=dst_acc_id,
-                                       amount=amount,
-                                       movement_type=MovementTypes.TRANSFER_DST)
-
         if src_bank == local_bank_id:
+
+            src_movement = AccountMovement(account_id=src_acc_id,
+                                           amount=-amount,
+                                           movement_type=MovementTypes.TRANSFER_SRC,
+                                           info=info)
+
             if src_bank != dst_bank:
                 bank_expenses = AccountMovement(account_id=src_acc_id,
                                                 amount=-2.5,
-                                                movement_type=MovementTypes.BANK_EXPENSE)
+                                                movement_type=MovementTypes.BANK_EXPENSE,
+                                                info="Transfer cost")
                 self.session.add(bank_expenses)
 
             self.session.add(src_movement)
 
         else:
+            dst_movement = AccountMovement(account_id=dst_acc_id,
+                                           amount=amount,
+                                           movement_type=MovementTypes.TRANSFER_DST,
+                                           info=info)
 
             self.session.add(dst_movement)
 
         self.session.commit()
-
-
-
