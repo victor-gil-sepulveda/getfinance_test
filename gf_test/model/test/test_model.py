@@ -7,9 +7,9 @@ import os.path
 import datetime
 from sqlalchemy.engine import create_engine
 from sqlalchemy.orm.session import sessionmaker
-from gf_test.model.model import Base, Bank, Account, AccountMovement, MovementTypes, Transfer
+from gf_test.model.model import Base, Bank, Account, AccountMovement, MovementTypes
 from gf_test.model.operation import Operation
-from gf_test.model.schemas import AccountSchema, AccountMovementSchema, TransferSchema, BankSchema
+from gf_test.model.schemas import AccountSchema, AccountMovementSchema, BankSchema
 import gf_test.model.test as test_module
 
 """
@@ -53,49 +53,56 @@ class TestModel(unittest.TestCase):
         jim_to_bank_mov = AccountMovement(account=jim_account,
                                           amount=50000,
                                           movement_type=MovementTypes.DEPOSIT,
-                                          created=datetime.datetime.strptime('24052010', "%d%m%Y").date())
+                                          created=datetime.datetime.strptime('24052010', "%d%m%Y").date(),
+                                          info="All my money")
 
-        jim_to_emma_transfer = Transfer(src_accmov=AccountMovement(account=jim_account,
-                                                                   amount=-20000,
-                                                                   movement_type=MovementTypes.TRANSFER_SRC,
-                                                                   created=datetime.datetime.strptime('24052010',
-                                                                                                      "%d%m%Y").date()),
-                                        dst_accmov=AccountMovement(account=emma_account,
-                                                                   amount=20000,
-                                                                   movement_type=MovementTypes.TRANSFER_DST,
-                                                                   created=datetime.datetime.strptime('24052010',
-                                                                                                      "%d%m%Y").date()),
-                                        info="Now we are even")
+        jim_to_emma_src = AccountMovement(account=jim_account,
+                                          amount=-20000,
+                                          movement_type=MovementTypes.TRANSFER_SRC,
+                                          created=datetime.datetime.strptime('24052010',
+                                                                             "%d%m%Y").date(),
+                                          info="Now we are even")
 
-        emma_to_steve_transfer = Transfer(src_accmov=AccountMovement(account=emma_account,
-                                                                     amount=-2500,
-                                                                     movement_type=MovementTypes.TRANSFER_SRC,
-                                                                     created=datetime.datetime.strptime('24052010',
-                                                                                                        "%d%m%Y").date()),
-                                          dst_accmov=AccountMovement(account=steve_account,
-                                                                     amount=2500,
-                                                                     movement_type=MovementTypes.TRANSFER_DST,
-                                                                     created=datetime.datetime.strptime('24052010',
-                                                                                                        "%d%m%Y").date()),
-                                          info="Flat rent")
+        jim_to_emma_dst = AccountMovement(account=emma_account,
+                                          amount=20000,
+                                          movement_type=MovementTypes.TRANSFER_DST,
+                                          created=datetime.datetime.strptime('24052010',
+                                                                             "%d%m%Y").date(),
+                                          info="Now we are even")
 
-        emma_to_sara_transfer = Transfer(src_accmov=AccountMovement(account=emma_account,
-                                                                    amount=-3000,
-                                                                    movement_type=MovementTypes.TRANSFER_SRC,
-                                                                    created=datetime.datetime.strptime('24052010',
-                                                                                                       "%d%m%Y").date()),
-                                         dst_accmov=AccountMovement(account=sara_account,
-                                                                    amount=3000,
-                                                                    movement_type=MovementTypes.TRANSFER_DST,
-                                                                    created=datetime.datetime.strptime('24052010',
-                                                                                                       "%d%m%Y").date()),
-                                         info="Birthday!!")
+        emma_to_steve_src = AccountMovement(account=emma_account,
+                                            amount=-2500,
+                                            movement_type=MovementTypes.TRANSFER_SRC,
+                                            created=datetime.datetime.strptime('24052010',
+                                                                               "%d%m%Y").date(),
+                                            info="Flat rent")
+
+        emma_to_steve_dst = AccountMovement(account=steve_account,
+                                            amount=2500,
+                                            movement_type=MovementTypes.TRANSFER_DST,
+                                            created=datetime.datetime.strptime('24052010',
+                                                                               "%d%m%Y").date(),
+                                            info="Flat rent")
+
+        emma_to_sara_src = AccountMovement(account=emma_account,
+                                           amount=-3000,
+                                           movement_type=MovementTypes.TRANSFER_SRC,
+                                           created=datetime.datetime.strptime('24052010',
+                                                                              "%d%m%Y").date(),
+                                           info="Birthday!!")
+
+        emma_to_sara_dst = AccountMovement(account=sara_account,
+                                           amount=3000,
+                                           movement_type=MovementTypes.TRANSFER_DST,
+                                           created=datetime.datetime.strptime('24052010',
+                                                                              "%d%m%Y").date(),
+                                           info="Birthday!!")
 
         session.add_all([
             pankia_bank, santonder_bank, da_box_bank,
             steve_account, jim_account, emma_account, sara_account, john_account, ralph_account,
             jim_to_bank_mov,
-            jim_to_emma_transfer, emma_to_steve_transfer, emma_to_sara_transfer
+            jim_to_emma_src, jim_to_emma_dst, emma_to_steve_src,emma_to_steve_dst, emma_to_sara_src, emma_to_sara_dst
         ])
 
         session.commit()
@@ -117,16 +124,11 @@ class TestModel(unittest.TestCase):
         for am in self.session.query(AccountMovement).all():
             data.append(acc_movement_schema.dump(am).data)
 
-        transfer_schema = TransferSchema()
-        for t in self.session.query(Transfer).all():
-            data.append(transfer_schema.dump(t).data)
-
         # fp = open(os.path.join(self.data_folder, "loaded_data.json"), "w")
         # json.dump(data, fp=fp, indent=4, sort_keys=True)
-
         fp = open(os.path.join(self.data_folder, "loaded_data.json"), "r")
         expected = json.load(fp)
-        self.assertItemsEqual(data, expected)
+        self.assertCountEqual(data, expected)
 
     def test_account_totals(self):
         jim_id = self.session.query(Account.id).filter(Account.customer_name == 'Jim').first()[0]
@@ -138,9 +140,11 @@ class TestModel(unittest.TestCase):
     def test_account_list(self):
         emma_id = self.session.query(Account.id).filter(Account.customer_name == 'Emma').first()[0]
         movements = Operation(self.session).account_movements(emma_id)
+        # fp = open(os.path.join(self.data_folder, "emma_movements.json"), "w")
+        # json.dump(movements, fp=fp, indent=4, sort_keys=True)
         fp = open(os.path.join(self.data_folder, "emma_movements.json"), "r")
         expected = json.load(fp)
-        self.assertItemsEqual(movements, expected)
+        self.assertCountEqual(movements, expected)
 
     def test_transfer_creation_from_local_bank(self):
         Operation(self.session).do_transfer(1, 1, 4, 100, "lol")

@@ -47,17 +47,4 @@ class AccountMovement(Base):
     account = relationship("Account", foreign_keys=[account_id])
     movement_type = Column(Integer, nullable=False)
     created = Column(DateTime, default=datetime.datetime.utcnow)
-
-
-class Transfer(Base):
-    """
-    A transfer between bank accounts, holding some info and associated expenses
-    """
-    TABLE = 'transfer'
-    __tablename__ = TABLE
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    src_accmov_id = Column(Integer, ForeignKey(AccountMovement.TABLE+'.id'), nullable=True)
-    dst_accmov_id = Column(Integer, ForeignKey(AccountMovement.TABLE+'.id'), nullable=True)
-    src_accmov = relationship("AccountMovement", foreign_keys=[src_accmov_id])
-    dst_accmov = relationship("AccountMovement", foreign_keys=[dst_accmov_id])
     info = Column(String(250))

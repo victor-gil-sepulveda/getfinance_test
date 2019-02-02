@@ -55,7 +55,6 @@ class Operation:
             .filter(Account.id == dst_acc_id) \
             .first()[0]
 
-        print src_bank, dst_bank
 
         src_movement = AccountMovement(account_id=src_acc_id,
                                        amount=-amount,
