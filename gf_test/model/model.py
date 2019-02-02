@@ -4,6 +4,7 @@ from sqlalchemy import Column, ForeignKey, Integer, String, Float, DateTime, Enu
 import enum
 
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql.sqltypes import Boolean
 
 Base = declarative_base()
 
@@ -22,6 +23,7 @@ class Bank(Base):
     __tablename__ = TABLE
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(32))
+    current = Column(Boolean, default=False)
     account = relationship("Account", back_populates=__tablename__, uselist=True)
 
 

@@ -146,8 +146,16 @@ class TestModel(unittest.TestCase):
         expected = json.load(fp)
         self.assertCountEqual(movements, expected)
 
-    def test_transfer_creation_from_local_bank(self):
-        Operation(self.session).do_transfer(1, 1, 4, 100, "lol")
+    def test_account_details(self):
+        details = Operation(self.session).account_details(1)
+        expected = {'bank': 1, 'id': 1, 'amount': 0.0, 'customer_name': 'Steve'}
+        self.assertDictEqual(details, expected)
+
+        details = Operation(self.session).account_details(10)
+        self.assertIs(details, None)
+
+    # def test_transfer_creation_from_local_bank(self):
+    #     Operation(self.session).do_transfer(1, 1, 4, 100, "lol")
 
 if __name__ == '__main__':
     unittest.main()

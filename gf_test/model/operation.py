@@ -1,6 +1,6 @@
 from sqlalchemy.sql.functions import func
 from gf_test.model.model import AccountMovement, Account, MovementTypes
-from gf_test.model.schemas import AccountMovementSchema
+from gf_test.model.schemas import AccountMovementSchema, AccountSchema
 from sqlalchemy import or_
 
 class Operation:
@@ -8,15 +8,30 @@ class Operation:
     def __init__(self, session):
         self.session = session
 
+    def account_details(self, acc_id):
+        """
+        Retrieves the details of an account or None if we cannot find it
+        """
+        account = self.session.query(Account)\
+                              .filter(Account.id == acc_id)\
+                              .first()
+
+        acc_schema = AccountSchema()
+        details = acc_schema.dump(account).data
+        if details == {}:
+            return None
+        else:
+            return details
+
     def account_totals(self, acc_id):
         """
         Retrieves the total amount of money in one bank account with id = acc_id
         """
         total = self.session.query(AccountMovement.account_id,
                                    func.sum(AccountMovement.amount).label("total"))\
-                          .filter(AccountMovement.account_id == acc_id)\
-                          .group_by(AccountMovement.account_id)\
-                          .first()[1]
+                             .filter(AccountMovement.account_id == acc_id)\
+                             .group_by(AccountMovement.account_id)\
+                             .first()[1]
         return total
 
     def account_movements(self, acc_id):
