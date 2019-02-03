@@ -24,6 +24,7 @@ class Bank(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(32))
     current = Column(Boolean, default=False)
+    url = Column(String(256), nullable=False)
     account = relationship("Account", back_populates=__tablename__, uselist=True)
 
 
@@ -49,4 +50,19 @@ class AccountMovement(Base):
     account = relationship("Account", foreign_keys=[account_id])
     movement_type = Column(Integer, nullable=False)
     created = Column(DateTime, default=datetime.datetime.utcnow)
-    info = Column(String(250))
+    info = Column(String(256))
+
+
+class Transfer(Base):
+    """
+    One side of a transfer.
+    """
+    TABLE = 'transfer'
+    __tablename__ = TABLE
+    id = Column(String(256), primary_key=True)
+    src_account_number = Column(String(256))
+    dst_account_number = Column(String(256))
+    local_movement_id = Column(Integer, ForeignKey(AccountMovement.TABLE+'.id'), nullable=False)
+    local_movement = relationship("AccountMovement", foreign_keys=[local_movement_id])
+    cost_id = Column(Integer, ForeignKey(AccountMovement.TABLE+'.id'), nullable=True)
+    cost = relationship("AccountMovement", foreign_keys=[cost_id])

@@ -4,24 +4,30 @@
             1,
             2
         ],
+        "current": false,
         "id": 1,
-        "name": "Pankia"
+        "name": "Pankia",
+        "url": "https://pankia.com"
     },
     {
         "account": [
             3,
             4
         ],
+        "current": false,
         "id": 2,
-        "name": "Santonder"
+        "name": "Santonder",
+        "url": "https://santonder.com"
     },
     {
         "account": [
             5,
             6
         ],
+        "current": false,
         "id": 3,
-        "name": "DaBox"
+        "name": "DaBox",
+        "url": "https://dabox.com"
     },
     {
         "amount": 0.0,

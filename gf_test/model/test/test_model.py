@@ -36,9 +36,9 @@ class TestModel(unittest.TestCase):
         session = self.Session()
 
         ## Banks
-        pankia_bank = Bank(name="Pankia")
-        santonder_bank = Bank(name="Santonder")
-        da_box_bank = Bank(name="DaBox")
+        pankia_bank = Bank(name="Pankia", url="https://pankia.com")
+        santonder_bank = Bank(name="Santonder", url="https://santonder.com")
+        da_box_bank = Bank(name="DaBox", url="https://dabox.com")
 
         # Accounts
         steve_account = Account(bank=pankia_bank, customer_name="Steve")

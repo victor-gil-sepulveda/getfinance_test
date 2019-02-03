@@ -1,3 +1,5 @@
+import datetime
+import hashlib
 import json
 from sqlalchemy.ext.declarative import DeclarativeMeta
 
@@ -23,3 +25,16 @@ class AlchemyEncoder(json.JSONEncoder):
             return fields
 
         return json.JSONEncoder.default(self, obj)
+
+
+def parse_acc_number(acc_id):
+    b_id, a_id = acc_id.split("-")
+    return int(b_id), int(a_id)
+
+
+def gen_transfer_id(src_acc_number, dst_acc_number):
+    m = hashlib.sha256()
+    m.update(src_acc_number+dst_acc_number+str(datetime.datetime.now()))
+    return m.hexdigest()
+
+
