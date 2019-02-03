@@ -1,7 +1,6 @@
 from flask_restful import Api
 import gf_test.service.rest.v1 as v1
-
-API_PREFIX = "gftest"
+from gf_test.service.rest.tools import API_PREFIX
 
 
 def get_version(version_module):
@@ -18,6 +17,9 @@ def setup_rest_api(flask_app):
     api = Api(flask_app)
 
     version = v1
+
+    api.add_resource(version.Account,
+                     gen_resource_url(API_PREFIX, version, "account/<account_id>"))
 
     api.add_resource(version.AccountMovements,
                      gen_resource_url(API_PREFIX, version, "/<account_id>/list"))

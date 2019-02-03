@@ -10,3 +10,5 @@ Add transfer costs as db triggers
 
 Storing transfers implies storing foreign accounts and movements in every bank,
 so we will only store movements themselves.
+
+Improvements: sustitute some operations by remote REST calls

@@ -32,8 +32,8 @@ class TestModel(unittest.TestCase):
             os.remove(TestModel.TEST_DB)
         engine = create_engine('sqlite:///'+TestModel.TEST_DB)
         Base.metadata.create_all(engine)
-        Session = sessionmaker(bind=engine)
-        session = Session()
+        self.Session = sessionmaker(bind=engine)
+        session = self.Session()
 
         ## Banks
         pankia_bank = Bank(name="Pankia")
@@ -111,17 +111,18 @@ class TestModel(unittest.TestCase):
 
     def test_model_loaded(self):
         data = []
+        session = self.Session()
 
         bank_schema = BankSchema()
-        for b in self.session.query(Bank).all():
+        for b in session.query(Bank).all():
             data.append(bank_schema.dump(b).data)
 
         acc_schema = AccountSchema()
-        for a in self.session.query(Account).all():
+        for a in session.query(Account).all():
             data.append(acc_schema.dump(a).data)
 
         acc_movement_schema = AccountMovementSchema()
-        for am in self.session.query(AccountMovement).all():
+        for am in session.query(AccountMovement).all():
             data.append(acc_movement_schema.dump(am).data)
 
         # fp = open(os.path.join(self.data_folder, "loaded_data.json"), "w")
@@ -132,14 +133,14 @@ class TestModel(unittest.TestCase):
 
     def test_account_totals(self):
         jim_id = self.session.query(Account.id).filter(Account.customer_name == 'Jim').first()[0]
-        self.assertEqual(Operation(self.session).account_totals(jim_id), 30000)
+        self.assertEqual(Operation(self.Session).account_totals(jim_id), 30000)
 
         emma_id = self.session.query(Account.id).filter(Account.customer_name == 'Emma').first()[0]
-        self.assertEqual(Operation(self.session).account_totals(emma_id), 14500)
+        self.assertEqual(Operation(self.Session).account_totals(emma_id), 14500)
 
     def test_account_list(self):
         emma_id = self.session.query(Account.id).filter(Account.customer_name == 'Emma').first()[0]
-        movements = Operation(self.session).account_movements(emma_id)
+        movements = Operation(self.Session).account_movements(emma_id)
         # fp = open(os.path.join(self.data_folder, "emma_movements.json"), "w")
         # json.dump(movements, fp=fp, indent=4, sort_keys=True)
         fp = open(os.path.join(self.data_folder, "emma_movements.json"), "r")
@@ -147,11 +148,11 @@ class TestModel(unittest.TestCase):
         self.assertCountEqual(movements, expected)
 
     def test_account_details(self):
-        details = Operation(self.session).account_details(1)
+        details = Operation(self.Session).account_details(1)
         expected = {'bank': 1, 'id': 1, 'amount': 0.0, 'customer_name': 'Steve'}
         self.assertDictEqual(details, expected)
 
-        details = Operation(self.session).account_details(10)
+        details = Operation(self.Session).account_details(10)
         self.assertIs(details, None)
 
     # def test_transfer_creation_from_local_bank(self):
